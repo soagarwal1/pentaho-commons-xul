@@ -20,6 +20,9 @@ package org.pentaho.ui.xul.gwt.tags;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.logical.shared.ResizeHandler;
+import com.google.gwt.user.client.Window;
 import org.pentaho.gwt.widgets.client.utils.string.StringUtils;
 import org.pentaho.ui.xul.XulComponent;
 import org.pentaho.ui.xul.XulDomContainer;
@@ -39,7 +42,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import org.pentaho.gwt.widgets.client.utils.ElementUtils;
 
-public class GwtDialog extends GenericDialog implements XulDialog {
+public class GwtDialog extends GenericDialog implements XulDialog, ResizeHandler {
 
   public static void register() {
     GwtXulParser.registerHandler( "dialog", new GwtXulHandler() {
@@ -60,6 +63,7 @@ public class GwtDialog extends GenericDialog implements XulDialog {
 
     setManagedObject( null );
     this.orientation = Orient.VERTICAL;
+    Window.addResizeHandler(this);
   }
 
   // we don't add ourselves to the main screen
@@ -381,6 +385,7 @@ public class GwtDialog extends GenericDialog implements XulDialog {
     for ( XulButton btn : dialogButtons ) {
       this.addChild( btn );
     }
+    resizeDialog();
 
     // call into the method that sets the hover style on button elements for IE,
     // since hover pseudo-classes don't work when not in quirksmode
@@ -486,6 +491,32 @@ public class GwtDialog extends GenericDialog implements XulDialog {
   public void center() {
     if ( dialog != null ) {
       dialog.center();
+    }
+  }
+
+  @Override
+  public void onResize(ResizeEvent resizeEvent) {
+    if (isVisible() ) { //check if popup is showing
+      resizeDialog();
+    }
+  }
+
+  private void resizeDialog() {
+    dialog.getElement().getStyle().setProperty("overflowY", "auto");
+    dialog.getElement().getStyle().setProperty("overflowX", "hidden");
+    int left = ((Window.getClientWidth() - dialog.getOffsetWidth()) / 2);
+    int top = (Window.getClientHeight() - dialog.getOffsetHeight()) / 2;
+
+
+
+    dialog.setPopupPosition(Math.max(left, 10), Math.max(top, 10));
+    dialog.getElement().getStyle().setProperty("maxWidth", "80%");
+    if(left<40){
+
+
+      xulDomContainer.getDocumentRoot().getElementById("csvColumnsContent").setWidth((Window.getClientWidth()-2*left-40));
+    }else{
+      xulDomContainer.getDocumentRoot().getElementById("csvColumnsContent").setWidth(480);
     }
   }
 }
